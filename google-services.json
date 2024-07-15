@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "731240131076",
+    "project_id": "otpauthapp-9ed7d",
+    "storage_bucket": "otpauthapp-9ed7d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:731240131076:android:644755e03fd5e4b10ea351",
+        "android_client_info": {
+          "package_name": "com.mithushika.BloodBond"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "731240131076-971thu0hjsp0tifjh05gk98dua63lkii.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mithushika.BloodBond",
+            "certificate_hash": "cd86426a94761d2047a713c5a7504fc8d39b52c2"
+          }
+        },
+        {
+          "client_id": "731240131076-orfbd2dpk0h24j6cdcr5flvhothp6vk1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mithushika.BloodBond",
+            "certificate_hash": "2aed7053a3964b0ea923f440965e1283f7d734d0"
+          }
+        },
+        {
+          "client_id": "731240131076-cqnnhi7kdldm71gg3k725llm52i16jbd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDF1EKHqdSYu76D9GhThtutK0StEyC3fo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "731240131076-cqnnhi7kdldm71gg3k725llm52i16jbd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
