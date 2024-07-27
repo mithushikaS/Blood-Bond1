@@ -69,30 +69,32 @@ const DonationRequest = ({ navigation }) => {
 
       const eligible = response.data.Eligible;
 
-      if (eligible) {
-        const donorData = {
-          name,
-          bloodGroup,
-          bloodType,
-          gender,
-          idNumber,
-          address,
-          contactNo1,
-          contactNo2,
-          age,
-          weight,
-          months,
-          createdAt: firestore.FieldValue.serverTimestamp(),
-          eligible: eligible,
-        };
+      const donorData = {
+        name,
+        bloodGroup,
+        bloodType,
+        gender,
+        idNumber,
+        address,
+        contactNo1,
+        contactNo2,
+        age,
+        weight,
+        months,
+        createdAt: firestore.FieldValue.serverTimestamp(),
+        eligible: eligible,
+      };
 
-        // Add donor data to Firestore
-        await firestore().collection('donors').add(donorData);
+      // Add donor data to Firestore
+      await firestore().collection('donors').add(donorData);
+
+      if (eligible) {
         Alert.alert('Success', 'Donor information has been saved successfully.');
-        navigation.navigate('WeightQ1');
       } else {
         Alert.alert('Not Eligible', 'The donor is not eligible to donate blood.');
       }
+
+      navigation.navigate('Profile');
     } catch (error) {
       console.error(error); // Log error for debugging
       Alert.alert('Error', 'An error occurred while processing your request.');
