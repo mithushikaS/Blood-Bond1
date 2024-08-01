@@ -1,78 +1,89 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Image } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // Assuming you're using Expo for vector icons
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import firestore from '@react-native-firebase/firestore';
+import axios from 'axios';
 
 const FindDonorsScreen = () => {
   const navigation = useNavigation();
-
   const [searchText, setSearchText] = useState('');
   const [userList, setUserList] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
 
-  // Dummy data for user list
-  const dummyUsers = [
-    { id: 1, name: 'John Doe', location: 'New York', bloodGroup: 'O+', lastDonatedDate: '2023-05-10',profileImage: require('../../../assets/images/profile5.jpg') },
-    { id: 2, name: 'Jane Smith', location: 'Los Angeles', bloodGroup: 'A-', lastDonatedDate: '2023-05-10',profileImage: require('../../../assets/images/profile2.jpg') },
-    { id: 3, name: 'Michael Johnson', location: 'Chicago', bloodGroup: 'B+', lastDonatedDate: '2023-05-10',profileImage: require('../../../assets/images/profile3.jpg') },
-    { id: 4, name: 'Emily Brown', location: 'Houston', bloodGroup: 'AB-', lastDonatedDate: '2023-05-10',profileImage: require('../../../assets/images/profile4.jpg') },
-    { id: 5, name: 'William Davis', location: 'Miami', bloodGroup: 'O-', lastDonatedDate: '2023-05-10',profileImage: require('../../../assets/images/profile6.jpg') },
-    { id: 6, name: 'Sarah Wilson', location: 'Seattle', bloodGroup: 'A+', lastDonatedDate: '2023-05-10',profileImage: require('../../../assets/images/profile6.jpg') },
-    { id: 7, name: 'Christopher Lee', location: 'San Francisco', bloodGroup: 'B-', lastDonatedDate: '2023-05-10',profileImage: require('../../../assets/images/profile7.jpg') },
-    { id: 8, name: 'Jessica Martinez', location: 'Dallas', bloodGroup: 'AB+', lastDonatedDate: '2023-05-10',profileImage: require('../../../assets/images/profile8.jpg')},
-    { id: 9, name: 'Daniel Taylor', location: 'Atlanta', bloodGroup: 'A-', lastDonatedDate: '2023-05-10',profileImage: require('../../../assets/images/profile2.jpg')},
-    { id: 10, name: 'Amanda White', location: 'Boston', bloodGroup: 'O+', lastDonatedDate: '2023-05-10',profileImage: require('../../../assets/images/profile4.jpg') },
-    // Add more dummy users as needed
-  ];
+  useEffect(() => {
+    fetchDonors();
+  }, []);
 
-  // Function to handle search
-  const handleSearch = () => {
-    // Implement search functionality here
-    // For simplicity, let's filter the dummyUsers based on searchText
-    const filteredUsers = dummyUsers.filter(user =>
-      user.name.toLowerCase().includes(searchText.toLowerCase())
-    );
-    setUserList(filteredUsers);
+  const fetchDonors = async () => {
+    try {
+      const donorSnapshot = await firestore().collection('donors').get();
+      const donors = donorSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setAllUsers(donors);
+    } catch (error) {
+      console.error("Error fetching donors: ", error);
+    }
   };
 
-  // Function to render each user item
+  const handleSearch = async () => {
+    try {
+      const filteredUsers = [];
+      for (const user of allUsers) {
+        const isCompatible = await checkCompatibility(user.bloodType, searchText);
+        if (isCompatible) {
+          filteredUsers.push(user);
+        }
+      }
+      setUserList(filteredUsers);
+    } catch (error) {
+      console.error("Error during search: ", error);
+    }
+  };
+
+  const checkCompatibility = async (donorBloodType, recipientBloodType) => {
+    try {
+      const response = await axios.post('http://172.20.10.2:5000/predict', {
+        blood_type: donorBloodType,
+        recipient_blood_type: recipientBloodType
+      });
+      return response.data.compatible;
+    } catch (error) {
+      console.error("Error checking compatibility: ", error);
+      return false;
+    }
+  };
+
   const renderUserItem = ({ item }) => (
     <TouchableOpacity style={styles.userItem} onPress={() => navigation.navigate('DonorDetailsScreen', { user: item })}>
-      <View style={styles.userInfo}> 
-       
+      <View style={styles.userInfo}>
         <Text style={styles.userName}>{item.name}</Text>
         <Text style={styles.userDetail}>Location: {item.location}</Text>
         <Text style={styles.userDetail}>Blood Group: {item.bloodGroup}</Text>
       </View>
-      <Image source={item.profileImage} style={styles.profileImage} />
+      <Image source={item.profileImage ? { uri: item.profileImage } : require('../../../assets/images/profile7.jpg')} style={styles.profileImage} />
     </TouchableOpacity>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerText}>Blood Donors</Text>
         <TouchableOpacity onPress={handleSearch}>
           <Ionicons name="search" size={24} color="black" />
         </TouchableOpacity>
       </View>
-      
-      {/* Search Bar */}
       <View style={styles.searchBar}>
         <TextInput
           style={styles.input}
-          placeholder="Search by name..."
+          placeholder="Enter recipient blood type..."
           value={searchText}
           onChangeText={setSearchText}
           onSubmitEditing={handleSearch}
         />
-
       </View>
-      
-      {/* User List */}
       <FlatList
-        data={searchText ? userList : dummyUsers}
+        data={userList}
         renderItem={renderUserItem}
         keyExtractor={item => item.id.toString()}
       />
@@ -90,12 +101,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 20,
-    
   },
   headerText: {
     fontSize: 24,
     fontWeight: 'bold',
-    color:'#6b0711',
+    color: '#6b0711',
   },
   searchBar: {
     marginBottom: 20,
@@ -106,7 +116,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
   },
-
   userItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -134,8 +143,6 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     marginRight: 10,
   },
-  
 });
-
 
 export default FindDonorsScreen;
