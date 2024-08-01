@@ -13,16 +13,16 @@ const FindDonorsScreen = () => {
   const [allUsers, setAllUsers] = useState([]);
 
   useEffect(() => {
-    fetchDonors();
+    fetchEligibleDonors();
   }, []);
 
-  const fetchDonors = async () => {
+  const fetchEligibleDonors = async () => {
     try {
-      const donorSnapshot = await firestore().collection('donors').get();
+      const donorSnapshot = await firestore().collection('donors').where('eligible', '==', true).get();
       const donors = donorSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setAllUsers(donors);
     } catch (error) {
-      console.error("Error fetching donors: ", error);
+      console.error("Error fetching eligible donors: ", error);
     }
   };
 
