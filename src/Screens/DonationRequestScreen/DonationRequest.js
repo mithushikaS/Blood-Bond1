@@ -61,7 +61,7 @@ const DonationRequest = ({ navigation }) => {
 
     try {
       // Make API request to Flask backend for eligibility prediction
-      const response = await axios.post('http://172.20.10.2:5000/predict', predictionData, {
+      const response = await axios.post('http://172.20.10.2:5001/predict', predictionData, {
         headers: {
           'Content-Type': 'application/json',
         },
