@@ -1,21 +1,53 @@
-import React from 'react';
-import { View, Text, StyleSheet,Image,TouchableOpacity, Alert} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import firestore from '@react-native-firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
 
-const DonorDetailsScreen = ({ route }) => {
-  const { user } = route.params;
+const DonorDetailsScreen = () => {
+  const [donors, setDonors] = useState([]);
   const navigation = useNavigation();
-  const handleRequestPress = async () => {
+
+  useEffect(() => {
+    const fetchDonors = async () => {
+      try {
+        const donorSnapshot = await firestore().collection('donors').get();
+        const donorList = donorSnapshot.docs.map(doc => {
+          const data = doc.data();
+          const lastDonatedDate = calculateLastDonatedDate(data.months);
+          return {
+            ...data,
+            location: data.address,
+            lastDonatedDate,
+            profileImage: require('../../../assets/images/profile7.jpg'),
+          };
+        });
+        setDonors(donorList);
+      } catch (error) {
+        console.error(error);
+        Alert.alert('Error', 'Something went wrong while fetching donor details.');
+      }
+    };
+
+    fetchDonors();
+  }, []);
+
+  const calculateLastDonatedDate = (months) => {
+    const currentDate = new Date();
+    const donationDate = new Date();
+    donationDate.setMonth(currentDate.getMonth() - months);
+    return donationDate.toLocaleDateString();
+  };
+
+  const handleRequestPress = async (donor) => {
     try {
       await firestore().collection('request_start').add({
-        name: user.name,
-        location: user.location,
-        bloodGroup: user.bloodGroup,
-        lastDonatedDate: user.lastDonatedDate,
-        profileImage: user.profileImage,
+        name: donor.name,
+        location: donor.location,
+        bloodGroup: donor.bloodGroup,
+        lastDonatedDate: donor.lastDonatedDate,
+        profileImage: donor.profileImage,
         requestedAt: firestore.FieldValue.serverTimestamp(),
       });
       Alert.alert('Success', 'Request has been successfully created.');
@@ -26,38 +58,41 @@ const DonorDetailsScreen = ({ route }) => {
     }
   };
 
+  const renderDonorItem = ({ item }) => (
+    <View style={styles.donorCard}>
+      <Text style={styles.header}>Donor Details</Text>
+      <Image source={item.profileImage} style={styles.profileImage} />
+      <View style={styles.userInfo}>
+        <Text style={styles.label}>Name:</Text>
+        <Text style={styles.text}>{item.name}</Text>
+      </View>
+      <View style={styles.userInfo}>
+        <Text style={styles.label}>Location:</Text>
+        <Text style={styles.text}>{item.location}</Text>
+      </View>
+      <View style={styles.userInfo}>
+        <Text style={styles.label}>Blood Group:</Text>
+        <Text style={styles.text}>{item.bloodGroup}</Text>
+      </View>
+      <View style={styles.userInfo}>
+        <Text style={styles.label}>Last Donated Date:</Text>
+        <Text style={styles.text}>{item.lastDonatedDate}</Text>
+      </View>
+      <TouchableOpacity style={[styles.button, { backgroundColor: '#a31a28' }]} onPress={() => handleRequestPress(item)}>
+        <Icon name="rocket" size={20} color="white" />
+        <Text style={styles.buttonText}>Request</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
-      
-
-      <View style={styles.details}>      
-        <Text style={styles.header}>User Details</Text>
-        <Image source={user.profileImage} style={styles.profileImage} />
-        <View style={styles.userInfo}>
-            <Text style={styles.label}>Name:</Text>
-            <Text style={styles.text}>{user.name}</Text>
-        </View>
-        <View style={styles.userInfo}>
-            <Text style={styles.label}>Location:</Text>
-            <Text style={styles.text}>{user.location}</Text>
-        </View>
-        <View style={styles.userInfo}>
-            <Text style={styles.label}>Blood Group:</Text>
-            <Text style={styles.text}>{user.bloodGroup}</Text>
-        </View>
-        <View style={styles.userInfo}>
-            <Text style={styles.label}>Last Donated Date:</Text>
-            <Text style={styles.text}>{user.lastDonatedDate}</Text>
-        </View>
-      </View>
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={[styles.button, { backgroundColor: '#a31a28' }]}>
-          <Icon name="rocket" size={20} color="white" />
-          <Text style={styles.buttonText}>Request</Text>
-        </TouchableOpacity>
-      </View>
+      <FlatList
+        data={donors}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={renderDonorItem}
+        contentContainerStyle={styles.list}
+      />
     </SafeAreaView>
   );
 };
@@ -67,23 +102,22 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
-  details: {
+  list: {
+    paddingBottom: 20,
+  },
+  donorCard: {
     backgroundColor: '#fff',
     borderRadius: 10,
     padding: 20,
     marginBottom: 20,
-  },
-  headerContainer: {
-    marginBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    elevation: 3,
   },
   header: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
     color: '#6b0711',
-    textAlign:'center',
+    textAlign: 'center',
   },
   userInfo: {
     flexDirection: 'row',
@@ -107,19 +141,16 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     alignSelf: 'center',
   },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 40,
-  },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingBottom:5,
-    paddingTop:8,
-    paddingHorizontal:50,
+    paddingBottom: 5,
+    paddingTop: 8,
+    paddingHorizontal: 50,
     borderRadius: 8,
-    elevation:2,
+    elevation: 2,
+    justifyContent: 'center',
+    marginTop: 20,
   },
   buttonText: {
     color: 'white',

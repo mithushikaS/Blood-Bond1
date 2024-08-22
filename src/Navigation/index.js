@@ -54,7 +54,7 @@ const Navigation= () => {
         <Stack.Screen name="Profile" component={ProfileScreen}/>
         <Stack.Screen name="CreateRequest" component={CreateRequestScreen}/>
         <Stack.Screen name="FindDonors" component={FindDonorsScreen}/>
-        <Stack.Screen name="SuccessScreen" component={SuccessRequestScreen}/>
+        <Stack.Screen name="SuccessRequestScreen" component={SuccessRequestScreen}/>
         <Stack.Screen name="DonorDetailsScreen" component={DonorDetailsScreen}/>
         <Stack.Screen name="WeightQ1" component={WeightQ1}/>
         <Stack.Screen name="WeightQ2" component={SigninScreen}/> 

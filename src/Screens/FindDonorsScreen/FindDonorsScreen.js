@@ -55,7 +55,7 @@ const FindDonorsScreen = () => {
   };
 
   const renderUserItem = ({ item }) => (
-    <TouchableOpacity style={styles.userItem} onPress={() => navigation.navigate('Profile', { user: item })}>
+    <TouchableOpacity style={styles.userItem} onPress={() => navigation.navigate('DonorDetailsScreen', { user: item })}>
       <View style={styles.userInfo}>
         <Text style={styles.userName}>{item.name}</Text>
         <Text style={styles.userDetail}>Location: {item.location}</Text>
@@ -146,3 +146,4 @@ const styles = StyleSheet.create({
 });
 
 export default FindDonorsScreen;
+ 
