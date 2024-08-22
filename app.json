@@ -2,7 +2,12 @@
   "expo": {
     "name": "BloodBond",
     "slug": "BloodBond",
-    "plugins": ["@react-native-firebase/app", "@react-native-firebase/auth" , "@react-native-google-signin/google-signin"],
+    "plugins": [
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth",
+      "@react-native-google-signin/google-signin",
+      "@react-native-firebase/messaging"
+    ],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,7 +21,8 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mithushika.BloodBond"
     },
     "android": {
       "googleServicesFile": "./google-services.json",

@@ -43,7 +43,7 @@ const FindDonorsScreen = () => {
 
   const checkCompatibility = async (donorBloodType, recipientBloodType) => {
     try {
-      const response = await axios.post('http://172.20.10.2:5000/predict', {
+      const response = await axios.post('http://172.20.10.3:5002/predict', {
         blood_type: donorBloodType,
         recipient_blood_type: recipientBloodType
       });
@@ -55,7 +55,7 @@ const FindDonorsScreen = () => {
   };
 
   const renderUserItem = ({ item }) => (
-    <TouchableOpacity style={styles.userItem} onPress={() => navigation.navigate('DonorDetailsScreen', { user: item })}>
+    <TouchableOpacity style={styles.userItem} onPress={() => navigation.navigate('Profile', { user: item })}>
       <View style={styles.userInfo}>
         <Text style={styles.userName}>{item.name}</Text>
         <Text style={styles.userDetail}>Location: {item.location}</Text>

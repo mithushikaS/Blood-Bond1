@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as Linking from 'expo-linking';
 import dynamicLinks from '@react-native-firebase/dynamic-links';
 
+
 import SplashScreen from '../Screens/SplashScreen/SplashScreen';
 import SigninScreen from '../Screens/SigninScreen';
 import SignUpScreen from '../Screens/SignUpScreen';
@@ -18,7 +19,8 @@ import DonationRequestScreen from '../Screens/DonationRequestScreen';
 import FindDonorsScreen from '../Screens/FindDonorsScreen';
 import SuccessRequestScreen from '../Screens/SuccessRequestScreen';
 import DonorDetailsScreen from '../Screens/DonorDetailsScreen/DonorDetailsScreen';
-import WeightQ1 from '../Screens/WeightScreen1/WeightQ1'
+import WeightQ1 from '../Screens/WeightScreen1/WeightQ1';
+import NotificationScreen from '../Screens/NotificationScreen';
 
 
 
@@ -55,7 +57,8 @@ const Navigation= () => {
         <Stack.Screen name="SuccessScreen" component={SuccessRequestScreen}/>
         <Stack.Screen name="DonorDetailsScreen" component={DonorDetailsScreen}/>
         <Stack.Screen name="WeightQ1" component={WeightQ1}/>
-        <Stack.Screen name="WeightQ2" component={SigninScreen}/>        
+        <Stack.Screen name="WeightQ2" component={SigninScreen}/> 
+        <Stack.Screen name="Notification" component={NotificationScreen} />       
       </Stack.Navigator>
       </NavigationContainer>
   );
