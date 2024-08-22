@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, StyleSheet, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
 import axios from 'axios';
+import { Picker } from '@react-native-picker/picker';
 
 const FindDonorsScreen = () => {
   const navigation = useNavigation();
-  const [searchText, setSearchText] = useState('');
+  const [selectedBloodType, setSelectedBloodType] = useState('A+'); // Default selected blood type
   const [userList, setUserList] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
 
@@ -30,7 +31,7 @@ const FindDonorsScreen = () => {
     try {
       const filteredUsers = [];
       for (const user of allUsers) {
-        const isCompatible = await checkCompatibility(user.bloodType, searchText);
+        const isCompatible = await checkCompatibility(user.bloodType, selectedBloodType);
         if (isCompatible) {
           filteredUsers.push(user);
         }
@@ -73,14 +74,21 @@ const FindDonorsScreen = () => {
           <Ionicons name="search" size={24} color="black" />
         </TouchableOpacity>
       </View>
-      <View style={styles.searchBar}>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter recipient blood type..."
-          value={searchText}
-          onChangeText={setSearchText}
-          onSubmitEditing={handleSearch}
-        />
+      <View style={styles.pickerContainer}>
+        <Picker
+          selectedValue={selectedBloodType}
+          onValueChange={(itemValue) => setSelectedBloodType(itemValue)}
+          style={styles.picker}
+        >
+          <Picker.Item label="A+" value="A+" />
+          <Picker.Item label="A-" value="A-" />
+          <Picker.Item label="B+" value="B+" />
+          <Picker.Item label="B-" value="B-" />
+          <Picker.Item label="AB+" value="AB+" />
+          <Picker.Item label="AB-" value="AB-" />
+          <Picker.Item label="O+" value="O+" />
+          <Picker.Item label="O-" value="O-" />
+        </Picker>
       </View>
       <FlatList
         data={userList}
@@ -107,14 +115,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#6b0711',
   },
-  searchBar: {
+  pickerContainer: {
     marginBottom: 20,
-  },
-  input: {
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
-    padding: 10,
+  },
+  picker: {
+    height: 50,
+    width: '100%',
   },
   userItem: {
     flexDirection: 'row',
@@ -146,4 +155,3 @@ const styles = StyleSheet.create({
 });
 
 export default FindDonorsScreen;
- 

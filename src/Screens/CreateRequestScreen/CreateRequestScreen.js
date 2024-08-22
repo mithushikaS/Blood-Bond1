@@ -69,7 +69,7 @@ const CreateRequestScreen = () => {
       }
 
       Alert.alert('Success', 'Request created and notifications sent to eligible donors.');
-      navigation.navigate('SuccessScreen');
+      navigation.navigate('SuccessRequestScreen'); // Updated screen name
     } catch (error) {
       console.error(error);
       Alert.alert('Error', 'Something went wrong. Please try again.');
