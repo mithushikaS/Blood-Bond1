@@ -8,6 +8,7 @@ import axios from 'axios';
 
 const DonationRequest = ({ navigation }) => {
   const [name, setName] = useState('');
+  const [bloodGroup, setBloodGroup] = useState('');
   const [bloodType, setBloodType] = useState('');
   const [gender, setGender] = useState('');
   const [idNumber, setIDNumber] = useState('');
@@ -22,6 +23,7 @@ const DonationRequest = ({ navigation }) => {
     // Check if any field is empty
     if (
       !name ||
+      !bloodGroup ||
       !bloodType ||
       !gender ||
       !idNumber ||
@@ -49,43 +51,17 @@ const DonationRequest = ({ navigation }) => {
       return;
     }
 
+    // Prepare data for the prediction API
+    const predictionData = {
+      age: parseFloat(age),
+      months: parseFloat(months),
+      weight: parseFloat(weight),
+      'Blood_type': bloodType,
+    };
+
     try {
-      // Check if a user with the same ID number or contact number already exists
-      const existingUserQuery = await firestore()
-        .collection('donors')
-        .where('idNumber', '==', idNumber)
-        .get();
-
-      if (!existingUserQuery.empty) {
-        Alert.alert('Account Exists', 'An account with this ID number already exists.');
-        return;
-      }
-
-      const contactCheckQuery1 = await firestore()
-        .collection('donors')
-        .where('contactNo1', '==', contactNo1)
-        .get();
-
-      const contactCheckQuery2 = await firestore()
-        .collection('donors')
-        .where('contactNo2', '==', contactNo2)
-        .get();
-
-      if (!contactCheckQuery1.empty || !contactCheckQuery2.empty) {
-        Alert.alert('Account Exists', 'An account with these contact numbers already exists.');
-        return;
-      }
-
-      // Prepare data for the prediction API
-      const predictionData = {
-        age: parseFloat(age),
-        months: parseFloat(months),
-        weight: parseFloat(weight),
-        'Blood_type': bloodType,
-      };
-
       // Make API request to Flask backend for eligibility prediction
-      const response = await axios.post('http://172.20.10.3:5001/predict', predictionData, {
+      const response = await axios.post('http://172.20.10.5:5001/predict', predictionData, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -95,6 +71,7 @@ const DonationRequest = ({ navigation }) => {
 
       const donorData = {
         name,
+        bloodGroup,
         bloodType,
         gender,
         idNumber,
@@ -129,6 +106,7 @@ const DonationRequest = ({ navigation }) => {
       <View style={styles.container}>
         <Text style={styles.title}>Create an account</Text>
         <Custominput placeholder='Name' value={name} setValue={setName} />
+        <Custominput placeholder='Blood Group' value={bloodGroup} setValue={setBloodGroup} />
         <View style={styles.pickerContainer}>
           <Text style={styles.pickerLabel}>Select Blood Type</Text>
           <Picker

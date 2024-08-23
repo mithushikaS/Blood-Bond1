@@ -45,7 +45,7 @@ const CreateRequestScreen = () => {
 
       // Check blood type compatibility and send notifications
       for (const donor of donors) {
-        const response = await axios.post('http://172.20.10.3:5002/predict', {
+        const response = await axios.post('http://172.20.10.5:5002/predict', {
           blood_type: donor.bloodType,
           recipient_blood_type: bloodType,
         });
