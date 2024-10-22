@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import firestore from '@react-native-firebase/firestore';
@@ -9,73 +9,98 @@ const DonorDetailsScreen = () => {
   const [donor, setDonor] = useState(null);
   const navigation = useNavigation();
   const route = useRoute();
-  const { user } = route.params;
+  const { donorId } = route.params; // Ensure donorId is passed via route parameters
 
   useEffect(() => {
-    if (user) {
-      console.log('Received user:', user); // Debugging log
-      setDonor(user);
+    const fetchDonorDetails = async () => {
+      try {
+        const donorDoc = await firestore().collection('donors').doc(donorId).get();
+        if (donorDoc.exists) {
+          setDonor(donorDoc.data());
+        } else {
+          Alert.alert('Error', 'Donor not found');
+        }
+      } catch (error) {
+        console.error('Error fetching donor details:', error);
+        Alert.alert('Error', 'Something went wrong while fetching donor details.');
+      }
+    };
+
+    if (donorId) {
+      fetchDonorDetails();
     }
-  }, [user]);
+  }, [donorId]);
 
   const handleRequestPress = async () => {
     try {
       const donorData = {
         name: donor.name || 'Unknown',
-        location: donor.location || 'Unknown',
-        bloodType: donor.bloodType || 'Unknown', // Updated to use bloodType
-        lastDonatedDate: donor.lastDonatedDate || 'Unknown',
-        profileImage: donor.profileImage || '', // Set a default empty string if the profile image is missing
+        location: donor.address || 'Unknown', // Assuming address is the location
+        bloodType: donor.bloodType || 'Unknown',
+        lastDonatedMonths: donor.months || 'Unknown', // Months since last donation
         requestedAt: firestore.FieldValue.serverTimestamp(),
       };
 
       await firestore().collection('request_start').add(donorData);
 
       Alert.alert('Success', 'Request has been successfully created.');
-      navigation.navigate('SuccessRequestScreen'); 
+      navigation.navigate('SuccessRequestScreen');
     } catch (error) {
       console.error('Error creating request:', error);
       Alert.alert('Error', 'Something went wrong while creating the request.');
     }
   };
 
+  const calculateLastDonationDate = (months) => {
+    if (!months) return 'Unknown';
+    const currentDate = new Date();
+    currentDate.setMonth(currentDate.getMonth() - months);
+    return currentDate.toLocaleDateString(); // Format date as needed
+  };
+
   if (!donor) {
     return (
       <View style={styles.container}>
-        <Text>Loading...</Text>
+        <Text style={styles.loadingText}>Loading...</Text>
       </View>
     );
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.donorCard}>
-        <Text style={styles.header}>Donor Details</Text>
-        <Image 
-          source={donor.profileImage ? { uri: donor.profileImage } : require('../../../assets/images/profile7.jpg')} 
-          style={styles.profileImage} 
-        />
-        <View style={styles.userInfo}>
-          <Text style={styles.label}>Name:</Text>
-          <Text style={styles.text}>{donor.name ? donor.name : 'Not available'}</Text>
+      <ScrollView>
+        <View style={styles.donorCard}>
+          <Text style={styles.header}>Donor Details</Text>
+          <Image
+            source={donor.profileImage ? { uri: donor.profileImage } : require('../../../assets/images/profile7.jpg')}
+            style={styles.profileImage}
+          />
+          <View style={styles.userInfo}>
+            <Text style={styles.label}>Name:</Text>
+            <Text style={styles.text}>{donor.name || 'Unknown'}</Text>
+          </View>
+          <View style={styles.userInfo}>
+            <Text style={styles.label}>Location:</Text>
+            <Text style={styles.text}>{donor.address || 'Unknown'}</Text>
+          </View>
+          <View style={styles.userInfo}>
+            <Text style={styles.label}>Blood Type:</Text>
+            <Text style={styles.text}>{donor.bloodType || 'Unknown'}</Text>
+          </View>
+          <View style={styles.userInfo}>
+            <Text style={styles.label}>Last Donation Date:</Text>
+            <Text style={styles.text}>{calculateLastDonationDate(donor.months)}</Text>
+          </View>
+          <View style={styles.userInfo}>
+            <Text style={styles.label}>Months Since Last Donation:</Text>
+            <Text style={styles.text}>{donor.months || 'Unknown'}</Text>
+          </View>
+          <TouchableOpacity style={styles.button} onPress={handleRequestPress}>
+            <Icon name="rocket" size={20} color="white" />
+            <Text style={styles.buttonText}>Request</Text>
+          </TouchableOpacity>
         </View>
-        <View style={styles.userInfo}>
-          <Text style={styles.label}>Location:</Text>
-          <Text style={styles.text}>{donor.location ? donor.location : 'Not available'}</Text>
-        </View>
-        <View style={styles.userInfo}>
-          <Text style={styles.label}>Blood Type:</Text>
-          <Text style={styles.text}>{donor.bloodType ? donor.bloodType : 'Not available'}</Text>
-        </View>
-        <View style={styles.userInfo}>
-          <Text style={styles.label}>Last Donated Date:</Text>
-          <Text style={styles.text}>{donor.lastDonatedDate ? donor.lastDonatedDate : 'Not available'}</Text>
-        </View>
-        <TouchableOpacity style={[styles.button, { backgroundColor: '#a31a28' }]} onPress={handleRequestPress}>
-          <Icon name="rocket" size={20} color="white" />
-          <Text style={styles.buttonText}>Request</Text>
-        </TouchableOpacity>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -84,6 +109,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    backgroundColor: '#f5f5f5',
   },
   donorCard: {
     backgroundColor: '#fff',
@@ -118,18 +144,18 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    marginBottom: 10,
+    marginBottom: 20,
     alignSelf: 'center',
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingBottom: 5,
-    paddingTop: 8,
+    paddingVertical: 10,
     paddingHorizontal: 50,
     borderRadius: 8,
     elevation: 2,
     justifyContent: 'center',
+    backgroundColor: '#a31a28',
     marginTop: 20,
   },
   buttonText: {
@@ -137,6 +163,11 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  loadingText: {
+    fontSize: 18,
+    textAlign: 'center',
+    marginTop: 20,
   },
 });
 
